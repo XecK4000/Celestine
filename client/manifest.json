@@ -1,0 +1,124 @@
+{
+
+	"manifest_version": 2,
+	"name": "Célestine",
+	"version": "1.0",
+
+	"description": "TODO",
+
+	"icons": {
+		"48": "icons/celestine48.png",
+		"96": "icons/celestine96.png"
+	},
+
+	"background": {
+		"scripts": [
+			"jquery-3.2.1.min.js",
+			"celestine.js"
+		]
+	},
+
+	"content_scripts": [
+		{
+			"matches": ["<all_urls>"],
+			"js": ["jquery-3.2.1.min.js"]
+		},
+		{
+			"matches": ["<all_urls>"],
+			"js": ["celestine.js"]
+		}
+	],
+
+	"permissions": [
+		"tabs"
+	],
+
+	"web_accessible_resources": [
+		"ressources/brush.png",
+		"ressources/btn_brush.png",
+		"ressources/btn_mouse.png",
+		"ressources/btn_off.png",
+		"ressources/btn_on.png",
+		"ressources/btn_perch.png",
+		"ressources/bubbleDots_0.png",
+		"ressources/bubbleDots_1.png",
+		"ressources/bubbleDots_2.png",
+		"ressources/bubbleSing_0.png",
+		"ressources/bubbleSing_1.png",
+		"ressources/bubbleSing_2.png",
+		"ressources/bubbleZzz_0.png",
+		"ressources/bubbleZzz_1.png",
+		"ressources/bubbleZzz_2.png",
+		"ressources/heart_0.png",
+		"ressources/heart_1.png",
+		"ressources/heart_2.png",
+		"ressources/jump_0.png",
+		"ressources/jump_1.png",
+		"ressources/jump_2.png",
+		"ressources/jump_3.png",
+		"ressources/jump_4.png",
+		"ressources/jump_5.png",
+		"ressources/jump_6.png",
+		"ressources/jump_7.png",
+		"ressources/laid_0.png",
+		"ressources/laidBlink_0.png",
+		"ressources/laidBlink_1.png",
+		"ressources/laidBlink_2.png",
+		"ressources/laidBlink_3.png",
+		"ressources/laidBlink_4.png",
+		"ressources/laidPos_0.png",
+		"ressources/laidPos_1.png",
+		"ressources/laidPos_10.png",
+		"ressources/laidPos_11.png",
+		"ressources/laidPos_2.png",
+		"ressources/laidPos_3.png",
+		"ressources/laidPos_4.png",
+		"ressources/laidPos_5.png",
+		"ressources/laidPos_6.png",
+		"ressources/laidPos_7.png",
+		"ressources/laidPos_8.png",
+		"ressources/laidPos_9.png",
+		"ressources/landing_0.png",
+		"ressources/landing_1.png",
+		"ressources/landing_10.png",
+		"ressources/landing_11.png",
+		"ressources/landing_12.png",
+		"ressources/landing_2.png",
+		"ressources/landing_3.png",
+		"ressources/landing_4.png",
+		"ressources/landing_5.png",
+		"ressources/landing_6.png",
+		"ressources/landing_7.png",
+		"ressources/landing_8.png",
+		"ressources/landing_9.png",
+		"ressources/perch.png",
+		"ressources/still_0.png",
+		"ressources/still_1.png",
+		"ressources/still_10.png",
+		"ressources/still_11.png",
+		"ressources/still_12.png",
+		"ressources/still_13.png",
+		"ressources/still_2.png",
+		"ressources/still_3.png",
+		"ressources/still_4.png",
+		"ressources/still_5.png",
+		"ressources/still_6.png",
+		"ressources/still_7.png",
+		"ressources/still_8.png",
+		"ressources/still_9.png",
+		"ressources/takeoff_0.png",
+		"ressources/takeoff_1.png",
+		"ressources/takeoff_10.png",
+		"ressources/takeoff_11.png",
+		"ressources/takeoff_12.png",
+		"ressources/takeoff_2.png",
+		"ressources/takeoff_3.png",
+		"ressources/takeoff_4.png",
+		"ressources/takeoff_5.png",
+		"ressources/takeoff_6.png",
+		"ressources/takeoff_7.png",
+		"ressources/takeoff_8.png",
+		"ressources/takeoff_9.png"
+	]
+
+}
