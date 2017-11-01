@@ -2,7 +2,8 @@
 
 //Object to store everything
 var OWL = {
-	USER_ID: '2349',
+	USER_ID: '',
+	API_PATH: '',
 	UNIQUE_ID: new Date().getTime()+Math.random(),
 	TIMEOUT_DELAY: 2000,
 	REFRESH_DELAY: 1000,
@@ -35,10 +36,33 @@ OWL.initialize = function() {
 		OWL.send_server('init');
 	}
 	if(!OWL.IS_EXTENSION) {
+		OWL.USER_ID = document.getElementById('owl_id').innerHTML;
+		OWL.API_PATH = document.getElementById('owl_api').innerHTML;
 		window.addEventListener('storage', OWL.receive_storage);
 		setInterval(OWL.check_server, OWL.REFRESH_DELAY);
 		OWL.check_server();
 	} else {
+		if(OWL.IS_CHROME) {
+			browser.storage.sync.get(['id', 'server'], function(items) {
+				if(typeof items.id != 'undefined') {
+					OWL.USER_ID = items.id;
+				}
+				if(typeof items.server != 'undefined') {
+					OWL.API_PATH = items.server;
+				}
+			});
+		} else {
+			browser.storage.sync.get(['id', 'server']).then(function(items) {
+				if(typeof items.id != 'undefined') {
+					OWL.USER_ID = items.id;
+				}
+				if(typeof items.server != 'undefined') {
+					OWL.API_PATH = items.server;
+				}
+			}, function(error) {
+				console.log(error);
+			});
+		}
 		if(OWL.IS_SERVER()) {
 			browser.runtime.onMessage.addListener(OWL.s_receive);
 			setInterval(OWL.s_update,OWL.REFRESH_DELAY);
@@ -50,11 +74,13 @@ OWL.initialize = function() {
 };
 
 //Identify the context of the script
-if(typeof chrome != 'undefined' && typeof chrome.webstore == 'undefined') {
+if(typeof browser != 'undefined') {
+	OWL.IS_EXTENSION = true;
+	OWL.IS_CHROME = false;
+} else if(typeof chrome != 'undefined') {
 	var browser = chrome;
 	OWL.IS_EXTENSION = true;
-} else if(typeof browser != 'undefined') {
-	OWL.IS_EXTENSION = true;
+	OWL.IS_CHROME = true;
 } else {
 	var browser = undefined;
 	OWL.IS_EXTENSION = false;
@@ -294,7 +320,7 @@ OWL.c_leave_button = function() {
 // Server update: Update current data informations by contacting distant server
 OWL.s_update = function() {
 	$.ajax({
-		url : 'https://zbug.fr/celestine/owl.php?back_user='+OWL.USER_ID+'&action=server_update',
+		url : OWL.API_PATH+'?back_user='+OWL.USER_ID+'&action=server_update',
 		dataType : 'json',
 		method : 'GET'
 	}).done(function(data) {

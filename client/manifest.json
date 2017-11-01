@@ -4,7 +4,7 @@
 	"name": "Célestine",
 	"version": "1.0",
 
-	"description": "TODO",
+	"description": "Une chouette pour vous accompagner dans toutes vos activités",
 
 	"icons": {
 		"48": "icons/celestine48.png",
@@ -16,6 +16,10 @@
 			"jquery-3.2.1.min.js",
 			"celestine.js"
 		]
+	},
+
+	"options_ui": {
+		"page": "options.html"
 	},
 
 	"content_scripts": [
@@ -30,7 +34,8 @@
 	],
 
 	"permissions": [
-		"tabs"
+		"tabs",
+		"storage"
 	],
 
 	"web_accessible_resources": [
