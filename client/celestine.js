@@ -35,6 +35,7 @@ OWL.initialize = function() {
 		OWL.c_init_dom();
 		OWL.send_server('init');
 	}
+
 	if(!OWL.IS_EXTENSION) {
 		OWL.USER_ID = document.getElementById('owl_id').innerHTML;
 		OWL.API_PATH = document.getElementById('owl_api').innerHTML;
@@ -100,7 +101,6 @@ if(OWL.IS_EXTENSION) {
 } else {
 	window.addEventListener('load', OWL.initialize);
 }
-
 
 
 
@@ -197,7 +197,7 @@ OWL.get_url = function(url) {
 	if(OWL.IS_EXTENSION) {
 		return browser.extension.getURL('ressources/'+url);
 	} else {
-		return 'http://projets.xeck.fr/celestine/ressources/'+url;
+		return 'ressources/'+url;
 	}
 }
 
@@ -217,9 +217,20 @@ OWL.get_url = function(url) {
 /**************************************************************************************************/
 /*                                     APPLICATION FUNCTIONS                                      */
 /**************************************************************************************************/
+
 OWL.c_init_dom = function() {
 	$('body').append(OWL.DOM.PARENT = $('<div>').css({zIndex: 1111111}));
-	$('body').append(OWL.DOM.BUTTON_DISPLAY = $('<img>', {src: OWL.get_url('btn_on.png'), width: '35px'}).css({zIndex: 1111111, position: 'absolute', right: '0px', top: '0px'}).click(OWL.c_toggle).hover(OWL.c_enter_button, OWL.c_leave_button));
+	$('body').append(OWL.DOM.BUTTON_DISPLAY = $('<img>')
+		.attr({src: OWL.get_url('btn_on.png'), width: '35px', id: 'button_display'})
+		.css({zIndex: 1111111, position: 'absolute', right: '0px', top: '0px'})
+		.dblclick(OWL.c_toggle)
+		.hover(OWL.c_enter_button, OWL.c_leave_button)
+		.draggable({
+			cursor: "move",
+			start: function(event, ui) {},
+			stop: function(event, ui) {}
+		})
+	);
 	OWL.DOM.PARENT.append(OWL.DOM.INFORMATION_BOARD = $('<div>').css({zIndex: 1111111, display: 'none', position: 'absolute', right: '0px', top: '35px', border: '1px solid #7C6D8E', backgroundColor: 'rgba(255,255,255,0.5)', padding: '2px 4px', margin: '5px'}));
 	OWL.c_update();
 }
@@ -577,9 +588,6 @@ OWL.c_update_information_board = function(text) {
 OWL.c_update_owl = function(data) {
 	OWL.DATA.owls[data.owl_id] = data.data;
 }
-
-
-
 
 /*
 
