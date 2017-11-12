@@ -399,8 +399,11 @@ OWL.s_update = function() {
 					}
 				}
 				if(current_owl.NEXT_ACTION != 'NONE') {
-					switch(current_owl.NEXT_ACTION) {
-						case 'MOVE':
+					var t_next_action = current_owl.NEXT_ACTION;
+					OWL.DATA.owls[owl_id].NEXT_ACTION = 'NONE';
+					switch(t_next_action) {
+						case 'MOVE': //Owl is going to move
+							console.log('Owl '+owl_id+'-> MOVE');
 							OWL.DATA.owls[owl_id].ACTION = {
 								NAME: 'MOVE',
 								START: new Date().getTime(),
@@ -409,8 +412,22 @@ OWL.s_update = function() {
 							};
 							OWL.DATA.owls[owl_id].ROTATION = OWL.DATA.owls[owl_id].ACTION.POSITION.x > OWL.DATA.owls[owl_id].POSITION.x;
 							break;
+						case 'LEAVE': //Owl is going to leave the screen
+							console.log('Owl '+owl_id+'-> LEAVE');
+							OWL.DATA.owls[owl_id].ACTION = {
+								NAME: 'MOVE',
+								START: new Date().getTime(),
+								POSITION: OWL.get_coord_out(),
+								END: new Date().getTime()+Math.random()*5000+5000
+							};
+							OWL.DATA.owls[owl_id].ROTATION = OWL.DATA.owls[owl_id].ACTION.POSITION.x > OWL.DATA.owls[owl_id].POSITION.x;
+							OWL.DATA.owls[owl_id].NEXT_ACTION = 'DISAPPEAR';
+							break;
+						case 'DISAPPEAR': //Owl is going to disappear
+							console.log('Owl '+owl_id+'-> DISAPPEAR');
+							OWL.s_remove_owl(owl_id);
+							break;
 					}
-					OWL.DATA.owls[owl_id].NEXT_ACTION = 'NONE';
 					OWL.s_send_owl(owl_id);
 				}
 				break;
@@ -438,6 +455,7 @@ OWL.s_send_owl = function(owl_id) {
 
 //The server generate a new owl
 OWL.s_create_owl = function(owl_id) {
+	console.log('Owl '+owl_id+': CREATED');
 	OWL.DATA.owls[owl_id] = {
 		SIZE: 75,
 		POSITION: OWL.get_coord_out(),
@@ -456,8 +474,17 @@ OWL.s_create_owl = function(owl_id) {
 	OWL.DATA.owls[owl_id].ROTATION = OWL.DATA.owls[owl_id].ACTION.POSITION.x > OWL.DATA.owls[owl_id].POSITION.x;
 };
 
+OWL.s_remove_owl = function(owl_id) {
+	console.log('Owl '+owl_id+': REMOVED');
+	OWL.send_client('remove_owl', owl_id);
+	delete OWL.DATA.owls[owl_id];
+}
+
+OWL.c_remove_owl = function(owl_id) {
+	document.getElementById('owl'+owl_id).remove();
+}
+
 OWL.get_coord_out = function() {
-	//TODO Manage extension for the window size
 	var r = Math.random();
 	var win = OWL.get_coord_window();
 	if(r < 0.25) {
@@ -489,8 +516,8 @@ OWL.get_coord_out = function() {
 OWL.get_coord_in = function() {
 	var win = OWL.get_coord_window();
 	return {
-		x: parseInt(win.w*Math.random()),
-		y: parseInt(win.h*Math.random())
+		x: parseInt((win.w-150)*Math.random()+75),
+		y: parseInt((win.h-150)*Math.random()+75)
 	};
 };
 
@@ -528,7 +555,6 @@ OWL.s_receive_data = function(data) {
 	switch(data['type']) {
 		case 'init':
 			OWL.send_client('init', OWL.DATA);
-			console.log('send init');
 			break;
 		case 'answser_screen_size':
 			OWL.SERVER_DATA.SIZES.LIST.push(data['details']);
@@ -555,6 +581,9 @@ OWL.c_receive_data = function(data) {
 				break;
 			case 'update_owl':
 				OWL.c_update_owl(data['details']);
+				break;
+			case 'remove_owl':
+				OWL.c_remove_owl(data['details']);
 				break;
 			case 'request_screen_size':
 				OWL.send_server('answser_screen_size', {
