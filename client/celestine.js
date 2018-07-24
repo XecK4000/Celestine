@@ -39,7 +39,7 @@ OWL.initialize = function() {
 		OWL.USER_ID = document.getElementById('owl_id').innerHTML;
 		OWL.API_PATH = document.getElementById('owl_api').innerHTML;
 		window.addEventListener('storage', OWL.receive_storage);
-		setInterval(OWL.check_server, 10000);
+		setInterval(OWL.check_server, 60000);
 		OWL.check_server();
 	} else {
 		if(OWL.IS_CHROME) {
