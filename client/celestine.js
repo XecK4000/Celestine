@@ -6,7 +6,7 @@ var OWL = {
 	API_PATH: '',
 	UNIQUE_ID: new Date().getTime()+Math.random(),
 	TIMEOUT_DELAY: 2000,
-	REFRESH_DELAY: 1000,
+	REFRESH_DELAY: 60000,
 	DATA: {
 		owls: {}
 	},
@@ -39,7 +39,7 @@ OWL.initialize = function() {
 		OWL.USER_ID = document.getElementById('owl_id').innerHTML;
 		OWL.API_PATH = document.getElementById('owl_api').innerHTML;
 		window.addEventListener('storage', OWL.receive_storage);
-		setInterval(OWL.check_server, OWL.REFRESH_DELAY);
+		setInterval(OWL.check_server, 10000);
 		OWL.check_server();
 	} else {
 		if(OWL.IS_CHROME) {
@@ -197,7 +197,7 @@ OWL.get_url = function(url) {
 	if(OWL.IS_EXTENSION) {
 		return browser.extension.getURL('ressources/'+url);
 	} else {
-		return 'http://projets.xeck.fr/celestine/ressources/'+url;
+		return 'https://zbug.fr/celestine/client/ressources/'+url;
 	}
 }
 
