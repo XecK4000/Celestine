@@ -5,8 +5,9 @@ var OWL = {
 	USER_ID: '',
 	API_PATH: '',
 	UNIQUE_ID: new Date().getTime()+Math.random(),
-	TIMEOUT_DELAY: 2000, //Timeout delay for script version
-	REFRESH_DELAY: 60000,
+	SERVER_DELAY: 1000,			//Local server loop
+	WEBSERVER_DELAY: 60000,		//Web server call loop
+	WEBSERVER_LAST: new Date().getTime(),
 	DATA: {
 		owls: {}
 	},
@@ -24,6 +25,7 @@ var OWL = {
 	TIMER: {},
 	IS_READY: true
 };
+OWL.WEBSERVER_LAST -= OWL.WEBSERVER_DELAY;
 
 /**************************************************************************************************/
 /*                                         INITIALISATION                                         */
@@ -39,7 +41,7 @@ OWL.initialize = function() {
 		OWL.USER_ID = document.getElementById('owl_id').innerHTML;
 		OWL.API_PATH = document.getElementById('owl_api').innerHTML;
 		window.addEventListener('storage', OWL.receive_storage);
-		setInterval(OWL.check_server, OWL.TIMEOUT_DELAY/2);
+		setInterval(OWL.check_server, OWL.SERVER_DELAY);
 		OWL.check_server();
 	} else {
 		if(OWL.IS_CHROME) {
@@ -65,7 +67,7 @@ OWL.initialize = function() {
 		}
 		if(OWL.IS_SERVER()) {
 			browser.runtime.onMessage.addListener(OWL.s_receive);
-			setInterval(OWL.s_update,OWL.REFRESH_DELAY);
+			setInterval(OWL.s_update,OWL.SERVER_DELAY);
 			OWL.s_update();
 		} else {
 			browser.runtime.onMessage.addListener(OWL.c_receive);
@@ -117,8 +119,8 @@ OWL.check_server = function() {
 	}
 	//If the server is down, replace it
 	else if(typeof(localStorage.getItem('SERVER_TIME')) === 'undefined'
-			|| (new Date().getTime()-localStorage.getItem('SERVER_TIME') > OWL.TIMEOUT_DELAY && OWL.IS_READY)
-			|| (new Date().getTime()-localStorage.getItem('SERVER_TIME') > OWL.TIMEOUT_DELAY*2 && !OWL.IS_READY)) {
+			|| (new Date().getTime()-localStorage.getItem('SERVER_TIME') > OWL.SERVER_DELAY*2 && OWL.IS_READY)
+			|| (new Date().getTime()-localStorage.getItem('SERVER_TIME') > OWL.SERVER_DELAY*4 && !OWL.IS_READY)) {
 		localStorage.setItem('SERVER_ID', OWL.UNIQUE_ID);
 		localStorage.setItem('SERVER_TIME', new Date().getTime());
 		if(!OWL.IS_READY) {
@@ -126,7 +128,7 @@ OWL.check_server = function() {
 			OWL.IS_READY = true;
 		}
 		console.log('Server created ID: '+OWL.UNIQUE_ID);
-		setInterval(OWL.s_update,OWL.REFRESH_DELAY);
+		setInterval(OWL.s_update,OWL.SERVER_DELAY);
 		OWL.s_update();
 	}
 	//If still not a ready client, request for an init
@@ -319,54 +321,58 @@ OWL.c_leave_button = function() {
 
 // Server update: Update current data informations by contacting distant server
 OWL.s_update = function() {
-	$.ajax({
-		url : OWL.API_PATH+'?back_user='+OWL.USER_ID+'&action=server_update',
-		dataType : 'json',
-		method : 'GET'
-	}).done(function(data) {
-		//Display locations of owls
-		if(data.locations) {
-			var content = '';
-			for(var chouette_id in data.locations) {
-				content += data.locations[chouette_id].chouette_name + ' -> ' + data.locations[chouette_id].user_name + '<br />';
-			}
-			if(content != OWL.DATA.INFORMATION_BOARD) {
-				OWL.DATA.INFORMATION_BOARD = content;
-				OWL.send_client('update_information_board', content);
-			}
-		}
-		if(data.create && data.create.chouette_id && !OWL.DATA.owls[data.create.chouette_id]) {
-			OWL.s_create_owl[data.create.chouette_id];
-		}
-		if(data.current) {
-			for(var owl_id in OWL.DATA.owls) {
-				if(!data.current[owl_id]) {
-					OWL.DATA.owls[owl_id].NEXT_ACTION = 'LEAVE';
+	//On fait un appel au serveur si pas d'appel depuis OWL.WEBSERVER_DELAY
+	if(new Date().getTime()-OWL.WEBSERVER_LAST > OWL.WEBSERVER_DELAY) {
+		OWL.WEBSERVER_LAST = new Date().getTime();
+		$.ajax({
+			url : OWL.API_PATH+'?back_user='+OWL.USER_ID+'&action=server_update',
+			dataType : 'json',
+			method : 'GET'
+		}).done(function(data) {
+			//Display locations of owls
+			if(data.locations) {
+				var content = '';
+				for(var chouette_id in data.locations) {
+					content += data.locations[chouette_id].chouette_name + ' -> ' + data.locations[chouette_id].user_name + '<br />';
+				}
+				if(content != OWL.DATA.INFORMATION_BOARD) {
+					OWL.DATA.INFORMATION_BOARD = content;
+					OWL.send_client('update_information_board', content);
 				}
 			}
-			for(var owl_id in data.current) {
-				if(!OWL.DATA.owls[owl_id]) {
-					OWL.s_create_owl(owl_id);
-				}
+			if(data.create && data.create.chouette_id && !OWL.DATA.owls[data.create.chouette_id]) {
+				OWL.s_create_owl[data.create.chouette_id];
 			}
-			/*
-			//Check if all owls are still here
-			for(var owl_id in DATA.owls) {
-				if(!data.current[owl_id]) {
-					DATA.owls[owl_id].leave();
+			if(data.current) {
+				for(var owl_id in OWL.DATA.owls) {
+					if(!data.current[owl_id]) {
+						OWL.DATA.owls[owl_id].NEXT_ACTION = 'LEAVE';
+					}
 				}
-			}
-			for(var owl_id in data.current) {
-				if(!DATA.owls[owl_id]) {
-					var chouette = data.current[owl_id];
-					var width = parseInt(Math.random()*100+50);
+				for(var owl_id in data.current) {
+					if(!OWL.DATA.owls[owl_id]) {
+						OWL.s_create_owl(owl_id);
+					}
+				}
+				/*
+				//Check if all owls are still here
+				for(var owl_id in DATA.owls) {
+					if(!data.current[owl_id]) {
+						DATA.owls[owl_id].leave();
+					}
+				}
+				for(var owl_id in data.current) {
+					if(!DATA.owls[owl_id]) {
+						var chouette = data.current[owl_id];
+						var width = parseInt(Math.random()*100+50);
 
-					var coords = getCoordOutScreen();
-					DATA.owls[chouette.chouette_id] = new Owl(chouette.chouette_id, chouette.chouette_name, width, coords.x, coords.y);
-				}
-			}*/
-		}
-	});
+						var coords = getCoordOutScreen();
+						DATA.owls[chouette.chouette_id] = new Owl(chouette.chouette_id, chouette.chouette_name, width, coords.x, coords.y);
+					}
+				}*/
+			}
+		});
+	}
 	var current_time = new Date().getTime();
 	for(var owl_id in OWL.DATA.owls) {
 		var current_owl = OWL.DATA.owls[owl_id];
