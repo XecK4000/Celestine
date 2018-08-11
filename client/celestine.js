@@ -5,7 +5,7 @@ var OWL = {
 	USER_ID: '',
 	API_PATH: '',
 	UNIQUE_ID: new Date().getTime()+Math.random(),
-	TIMEOUT_DELAY: 2000,
+	TIMEOUT_DELAY: 2000, //Timeout delay for script version
 	REFRESH_DELAY: 60000,
 	DATA: {
 		owls: {}
@@ -39,7 +39,7 @@ OWL.initialize = function() {
 		OWL.USER_ID = document.getElementById('owl_id').innerHTML;
 		OWL.API_PATH = document.getElementById('owl_api').innerHTML;
 		window.addEventListener('storage', OWL.receive_storage);
-		setInterval(OWL.check_server, 60000);
+		setInterval(OWL.check_server, OWL.TIMEOUT_DELAY/2);
 		OWL.check_server();
 	} else {
 		if(OWL.IS_CHROME) {
@@ -114,7 +114,6 @@ OWL.check_server = function() {
 	//If the server is still up, warn the others
 	if(OWL.IS_SERVER()) {
 		localStorage.setItem('SERVER_TIME', new Date().getTime());
-		OWL.s_update();
 	}
 	//If the server is down, replace it
 	else if(typeof(localStorage.getItem('SERVER_TIME')) === 'undefined'
@@ -127,6 +126,7 @@ OWL.check_server = function() {
 			OWL.IS_READY = true;
 		}
 		console.log('Server created ID: '+OWL.UNIQUE_ID);
+		setInterval(OWL.s_update,OWL.REFRESH_DELAY);
 		OWL.s_update();
 	}
 	//If still not a ready client, request for an init
